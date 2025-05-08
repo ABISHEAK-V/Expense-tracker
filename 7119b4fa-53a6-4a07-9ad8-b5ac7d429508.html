@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 24.8.1.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { line-height: 115%; margin-bottom: 0.1in; background: transparent }
+		pre { background: transparent }
+		pre.western { font-family: "Liberation Mono", monospace; font-size: 10pt }
+		pre.cjk { font-family: "NSimSun", monospace; font-size: 10pt }
+		pre.ctl { font-family: "Liberation Mono", monospace; font-size: 10pt }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><pre class="western">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot; /&gt;
+  &lt;title&gt;Expense Tracker&lt;/title&gt;
+  &lt;script src=&quot;https://cdn.jsdelivr.net/npm/chart.js&quot;&gt;&lt;/script&gt;
+  &lt;style&gt;
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e9f1ff, #dbeaff);
+      padding: 30px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #0057b8;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #0057b8;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #003e85;
+    }
+    .hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    .chart-container {
+      height: 400px;
+      margin-top: 20px;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class=&quot;container&quot;&gt;
+    &lt;!-- Step 1: Name --&gt;
+    &lt;div id=&quot;step-1&quot;&gt;
+      &lt;h2&gt;👋 Welcome! What's your name?&lt;/h2&gt;
+      &lt;input type=&quot;text&quot; id=&quot;user-name&quot; placeholder=&quot;Enter your name&quot; /&gt;
+      &lt;button onclick=&quot;nextStep(1)&quot;&gt;Next&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Step 2: Salary --&gt;
+    &lt;div id=&quot;step-2&quot; class=&quot;hidden&quot;&gt;
+      &lt;h2&gt;💼 Enter your monthly salary&lt;/h2&gt;
+      &lt;input type=&quot;number&quot; id=&quot;user-salary&quot; placeholder=&quot;e.g., 50000&quot; /&gt;
+      &lt;button onclick=&quot;nextStep(2)&quot;&gt;Next&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Step 3: EMI --&gt;
+    &lt;div id=&quot;step-3&quot; class=&quot;hidden&quot;&gt;
+      &lt;h2&gt;💳 Do you have any EMIs?&lt;/h2&gt;
+      &lt;select id=&quot;has-emi&quot; onchange=&quot;toggleEmiInput()&quot;&gt;
+        &lt;option value=&quot;&quot;&gt;Select&lt;/option&gt;
+        &lt;option value=&quot;yes&quot;&gt;Yes&lt;/option&gt;
+        &lt;option value=&quot;no&quot;&gt;No&lt;/option&gt;
+      &lt;/select&gt;
+      &lt;div id=&quot;emi-section&quot; class=&quot;hidden&quot;&gt;
+        &lt;input type=&quot;number&quot; id=&quot;emi-count&quot; placeholder=&quot;How many EMIs?&quot; oninput=&quot;generateEmiFields()&quot; /&gt;
+        &lt;div id=&quot;emi-fields&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;button onclick=&quot;nextStep(3)&quot;&gt;Next&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Step 4: Expense Tracking --&gt;
+    &lt;div id=&quot;step-4&quot; class=&quot;hidden&quot;&gt;
+      &lt;h2&gt;📊 Hello, &lt;span id=&quot;display-name&quot;&gt;&lt;/span&gt;!&lt;/h2&gt;
+      &lt;p&gt;&lt;strong&gt;Salary:&lt;/strong&gt; ₹&lt;span id=&quot;display-salary&quot;&gt;&lt;/span&gt;&lt;/p&gt;
+      &lt;p&gt;&lt;strong&gt;Total EMI:&lt;/strong&gt; ₹&lt;span id=&quot;emi-total&quot;&gt;&lt;/span&gt;&lt;/p&gt;
+
+      &lt;h3&gt;Add an Expense&lt;/h3&gt;
+      &lt;input type=&quot;text&quot; id=&quot;expense-name&quot; placeholder=&quot;Expense Name&quot; /&gt;
+      &lt;input type=&quot;number&quot; id=&quot;expense-amount&quot; placeholder=&quot;Amount&quot; /&gt;
+      &lt;select id=&quot;expense-category&quot;&gt;
+  &lt;option value=&quot;&quot;&gt;Select Category&lt;/option&gt;
+  &lt;option&gt;Food&lt;/option&gt;
+  &lt;option&gt;Transport&lt;/option&gt;
+  &lt;option&gt;Entertainment&lt;/option&gt;
+  &lt;option&gt;Clothing&lt;/option&gt;
+  &lt;option&gt;Rent&lt;/option&gt;
+  &lt;option&gt;Groceries&lt;/option&gt;
+  &lt;option&gt;Bills&lt;/option&gt;
+  &lt;option&gt;Healthcare&lt;/option&gt;
+  &lt;option&gt;Education&lt;/option&gt;
+  &lt;option&gt;Subscriptions&lt;/option&gt;
+  &lt;option&gt;Travel&lt;/option&gt;
+  &lt;option&gt;Dining Out&lt;/option&gt;
+  &lt;option&gt;Investments&lt;/option&gt;
+  &lt;option&gt;Savings&lt;/option&gt;
+  &lt;option&gt;Gifts&lt;/option&gt;
+  &lt;option&gt;Maintenance&lt;/option&gt;
+  &lt;option&gt;Personal&lt;/option&gt;
+  &lt;option&gt;Other&lt;/option&gt;
+&lt;/select&gt;
+      &lt;input type=&quot;date&quot; id=&quot;expense-date&quot; /&gt;
+      &lt;button onclick=&quot;addExpense()&quot;&gt;Add Expense&lt;/button&gt;
+
+      &lt;h3&gt;📋 Expenses&lt;/h3&gt;
+      &lt;table id=&quot;expense-table&quot;&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;
+            &lt;th&gt;Name&lt;/th&gt;
+            &lt;th&gt;Amount&lt;/th&gt;
+            &lt;th&gt;Category&lt;/th&gt;
+            &lt;th&gt;Date&lt;/th&gt;
+          &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;&lt;/tbody&gt;
+      &lt;/table&gt;
+
+      &lt;div class=&quot;chart-container&quot;&gt;
+        &lt;canvas id=&quot;expenseChart&quot;&gt;&lt;/canvas&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    const userData = {
+      name: &quot;&quot;,
+      salary: 0,
+      emis: [],
+      expenses: []
+    };
+
+    function nextStep(step) {
+      if (step === 1) {
+        const name = document.getElementById('user-name').value.trim();
+        if (!name) return alert(&quot;Please enter your name.&quot;);
+        userData.name = name;
+      }
+
+      if (step === 2) {
+        const salary = parseFloat(document.getElementById('user-salary').value);
+        if (isNaN(salary) || salary &lt;= 0) return alert(&quot;Enter valid salary.&quot;);
+        userData.salary = salary;
+      }
+
+      if (step === 3) {
+        const hasEmi = document.getElementById('has-emi').value;
+        if (hasEmi === &quot;yes&quot;) {
+          const emiCount = parseInt(document.getElementById('emi-count').value);
+          userData.emis = [];
+          for (let i = 0; i &lt; emiCount; i++) {
+            const name = document.getElementById(emi-name-${i}).value.trim();
+            const amt = parseFloat(document.getElementById(emi-amt-${i}).value);
+            if (!name || isNaN(amt)) return alert(&quot;Enter valid EMI details.&quot;);
+            userData.emis.push({ name, amt });
+          }
+        }
+        showSummary();
+      }
+
+      document.getElementById(step-${step}).classList.add('hidden');
+      document.getElementById(step-${step + 1}).classList.remove('hidden');
+    }
+
+    function toggleEmiInput() {
+      const emiSection = document.getElementById('emi-section');
+      const hasEmi = document.getElementById('has-emi').value;
+      emiSection.classList.toggle('hidden', hasEmi !== &quot;yes&quot;);
+    }
+
+    function generateEmiFields() {
+      const count = parseInt(document.getElementById('emi-count').value);
+      const container = document.getElementById('emi-fields');
+      container.innerHTML = &quot;&quot;;
+      for (let i = 0; i &lt; count; i++) {
+        container.innerHTML += `
+          &lt;input type=&quot;text&quot; id=&quot;emi-name-${i}&quot; placeholder=&quot;EMI ${i + 1} Name&quot; /&gt;
+          &lt;input type=&quot;number&quot; id=&quot;emi-amt-${i}&quot; placeholder=&quot;EMI ${i + 1} Amount&quot; /&gt;
+        `;
+      }
+    }
+
+    function showSummary() {
+      document.getElementById(&quot;display-name&quot;).textContent = userData.name;
+      document.getElementById(&quot;display-salary&quot;).textContent = userData.salary.toFixed(2);
+      const totalEmi = userData.emis.reduce((sum, e) =&gt; sum + e.amt, 0);
+      document.getElementById(&quot;emi-total&quot;).textContent = totalEmi.toFixed(2);
+    }
+
+    function addExpense() {
+      const name = document.getElementById(&quot;expense-name&quot;).value.trim();
+      const amount = parseFloat(document.getElementById(&quot;expense-amount&quot;).value);
+      const category = document.getElementById(&quot;expense-category&quot;).value;
+      const date = document.getElementById(&quot;expense-date&quot;).value;
+
+      if (!name || isNaN(amount) || !category || !date) {
+        return alert(&quot;Please fill all expense details.&quot;);
+      }
+
+      const expense = { name, amount, category, date };
+      userData.expenses.push(expense);
+      updateExpenseTable();
+      updateChart();
+    }
+
+    function updateExpenseTable() {
+      const tbody = document.querySelector(&quot;#expense-table tbody&quot;);
+      tbody.innerHTML = &quot;&quot;;
+      userData.expenses.forEach(exp =&gt; {
+        const row = `&lt;tr&gt;
+          &lt;td&gt;${exp.name}&lt;/td&gt;
+          &lt;td&gt;₹${exp.amount.toFixed(2)}&lt;/td&gt;
+          &lt;td&gt;${exp.category}&lt;/td&gt;
+          &lt;td&gt;${exp.date}&lt;/td&gt;
+        &lt;/tr&gt;`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    let expenseChart;
+    function updateChart() {
+      const categoryTotals = {};
+      userData.expenses.forEach(exp =&gt; {
+        if (!categoryTotals[exp.category]) {
+          categoryTotals[exp.category] = 0;
+        }
+        categoryTotals[exp.category] += exp.amount;
+      });
+
+      const labels = Object.keys(categoryTotals);
+      const data = Object.values(categoryTotals);
+
+      if (expenseChart) expenseChart.destroy();
+
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+      expenseChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#8e44ad'],
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+</body>
+</html>
